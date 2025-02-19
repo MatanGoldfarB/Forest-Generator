@@ -13,12 +13,12 @@
 #include "Camera.h"
 
 Scene::Scene() 
-    : cameraPosition(0, 0, 0),
+    : camera(nullptr), 
+      cameraPosition(0, 0, 0),
       aliasing(false),
       ambientLight(nullptr),
       objCounter(0),
       lightCounter(0),
-      camera(nullptr),
       pointCounter(0)
 {}
 
