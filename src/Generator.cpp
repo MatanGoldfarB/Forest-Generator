@@ -3,6 +3,7 @@
 #include "Object.h"
 #include "Intersection.h"
 #include "Light.h"
+#include "Camera.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -74,12 +75,12 @@ float calcAlpha(const Vector& normal, const Vector& lightDir, const Vector& view
     return std::max(0.0f, viewDir.dot(reflectionDir));
 }
 
-// calculate the reflrct direction from the class
+// calculate the reflect direction from the class
 Vector reflect(const Vector& I, const Vector& N) {
     return I - N * 2.0f * I.dot(N);
 }
 
-//calculate the reflrct direction of the transperent object
+//calculate the refract direction of the transperent object
 Vector refract(const Vector& I, const Vector& N, float eta) {
     float cosi = std::clamp(I.dot(N), -1.0f, 1.0f);
     float etai = 1.0f, etat = eta;
@@ -151,52 +152,24 @@ void saveImage(int width, int height, const std::vector<Vector>& buffer, const s
 
 //creating and sending the rays
 void renderImage(int imageWidth, int imageHeight, const std::string& dataPath, Scene& scene) {
-    float screenWidth = 2.0f, screenHeight = 2.0f;
     scene.loadFromFile(dataPath);
-    int raysPerPixel = 1;
     // Extract the input file name
     std::filesystem::path inputPath(dataPath);
     std::string inputFileName = inputPath.stem().string();
     std::string outputFileName = "outputs/my" + inputFileName + ".png";
    
-    //if we want more then one ray, will change the ray nomber and the output name
-    if (scene.aliasing) {
-        outputFileName = "outputs/myAliasing" + inputFileName + ".png";
-        raysPerPixel = 10;
-    }
 
-    float pixelWidth = screenWidth / imageWidth;
-    float pixelHeight = screenHeight / imageHeight;
     std::vector<Vector> imageBuffer(imageWidth * imageHeight);
 
-   int subGridX = std::ceil(std::sqrt(raysPerPixel));
-    int subGridY = std::ceil(static_cast<float>(raysPerPixel) / subGridX);
-
+    Vector pos(0.0f, 0.0f, 8.0f);
+    Vector forward(0.0f, 0.0f, -1.0f);
+    Vector up(0.0f, 1.0f, 0.0f);
+    Camera camera(pos, forward, up, 4.0f, 2.0f, 2.0f, 800, 800);
     for (int j = 0; j < imageHeight; j++) {
         for (int i = 0; i < imageWidth; i++) {
             Vector accumulatedColor(0, 0, 0);
-
-            for (int sx = 0; sx < subGridX; ++sx) {
-                for (int sy = 0; sy < subGridY; ++sy) {
-                    if (sx * subGridY + sy >= raysPerPixel) {
-                        continue; // Skip extra sub-pixels if raysPerPixel is not perfectly divisible
-                    }
-
-                    // Compute sub-pixel position
-                    float subPixelX = -1.0f + (i + (sx + 0.5f) / subGridX) * pixelWidth;
-                    float subPixelY = -1.0f + (j + (sy + 0.5f) / subGridY) * pixelHeight;
-
-                    Vector subPixelPosition(subPixelX, subPixelY, 0);
-                    Vector rayDirection = (subPixelPosition - scene.cameraPosition).normalize();
-                    Ray ray(scene.cameraPosition, rayDirection);
-
-                    // Accumulate color from this ray
-                    accumulatedColor = accumulatedColor + createColor(ray, scene, 0);
-                }
-            }
-            accumulatedColor = accumulatedColor / float(raysPerPixel);
-
-            // Store the final color in the image buffer
+            Ray ray = camera.generateRay(j, i);
+            accumulatedColor = accumulatedColor + createColor(ray, scene, 0);
             int idx = (imageHeight - j - 1) * imageWidth + i;
             imageBuffer[idx] = accumulatedColor;
         }
