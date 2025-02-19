@@ -9,6 +9,8 @@
 #include "Intersection.h"
 #include "Vector.h"
 #include <cmath>
+#include <stdexcept>
+#include "Camera.h"
 
 Scene::Scene() 
     : cameraPosition(0, 0, 0),
@@ -16,6 +18,7 @@ Scene::Scene()
       ambientLight(nullptr),
       objCounter(0),
       lightCounter(0),
+      camera(nullptr),
       pointCounter(0)
 {}
 
@@ -26,6 +29,7 @@ Scene::~Scene() {
     for (Light* light : lights) {
         delete light;
     }
+    delete camera;
 }
 
 void Scene::loadFromFile(const std::string& filename) {
@@ -43,12 +47,37 @@ void Scene::loadFromFile(const std::string& filename) {
         iss >> type;
         switch (type) {
             case 'e': {
-                float x, y, z, a;
-                iss >> x >> y >> z >> a;
-                cameraPosition = Vector(x, y, z);
-                if (a - 0.0 < 1e-6){
-                    aliasing = true;
-                }
+                float x, y, z, f, sw, sh;
+                int iw, ih;
+                char discard;
+                Vector position, forward, up;
+                // Parsing: Position -> p(x y z)
+                iss >> discard >> discard >> x >> y >> z >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Position Format");
+                position = Vector(x, y, z);
+
+                // Parsing: Forward Vector -> f(x y z)
+                iss >> discard >> discard >> x >> y >> z >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Forward Vector Format");
+                forward = Vector(x, y, z);
+
+                // Parsing: Up Vector -> u(x y z)
+                iss >> discard >> discard >> x >> y >> z >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Up Vector Format");
+                up = Vector(x, y, z);
+
+                // Parsing: Focal Length -> l(f)
+                iss >> discard >> discard >> f >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Focal Length");
+
+                // Parsing: Sensor width and height -> s(w h)
+                iss >> discard >> discard >> sw >> sh >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Sensor Size");
+
+                // Parsing: Image width and height -> i(w h)
+                iss >> discard >> discard >> iw >> ih >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Image Size");
+                camera = new Camera(position, forward, up, 4.0f, 2.0f, 2.0f, 800, 800);
                 break;
             }
             case 'a': {

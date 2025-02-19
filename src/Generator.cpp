@@ -161,14 +161,15 @@ void renderImage(int imageWidth, int imageHeight, const std::string& dataPath, S
 
     std::vector<Vector> imageBuffer(imageWidth * imageHeight);
 
-    Vector pos(0.0f, 0.0f, 8.0f);
-    Vector forward(0.0f, 0.0f, -1.0f);
-    Vector up(0.0f, 1.0f, 0.0f);
-    Camera camera(pos, forward, up, 4.0f, 2.0f, 2.0f, 800, 800);
+    //Vector pos(0.0f, 0.0f, 8.0f);
+    //Vector forward(0.0f, 0.0f, -1.0f);
+    //Vector up(0.0f, 1.0f, 0.0f);
+    //Camera camera(pos, forward, up, 4.0f, 2.0f, 2.0f, 800, 800);
+
     for (int i = 0; i < imageHeight; i++) {
         for (int j = 0; j < imageWidth; j++) {
             Vector accumulatedColor(0, 0, 0);
-            Ray ray = camera.generateRay(i, j);
+            Ray ray = scene.camera->generateRay(i, j);
             accumulatedColor = accumulatedColor + createColor(ray, scene, 0);
             int idx = (imageHeight - i - 1) * imageWidth + j;
             imageBuffer[idx] = accumulatedColor;

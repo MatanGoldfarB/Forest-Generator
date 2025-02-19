@@ -1,0 +1,1 @@
+camera: "e p(x y z) f(x y z) u(x y z) l(f) s(w h) i(w h)"

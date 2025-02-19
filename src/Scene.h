@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "Vector.h"
+#include "Camera.h"
 
 class Object;
 class Light;
@@ -15,7 +16,7 @@ public:
     ~Scene();
 
     void loadFromFile(const std::string& filename);
-
+    Camera* camera;
     Vector cameraPosition;
     bool aliasing;
     AmbientLight* ambientLight = nullptr;
