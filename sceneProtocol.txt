@@ -1,5 +1,5 @@
 Camera: "e p(x y z) f(x y z) u(x y z) l(f) s(w h) i(w h)"
 // position - forward vector - up vector - focal length - size - image pixel dimention
-Directional Light: "d d(x y z)"
+Directional Light: "d d(x y z) i(x y z)"
 // direction (always in infinity)
 Spotlight: "s p(x y z) d(x y z c)"
