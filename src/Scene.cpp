@@ -44,12 +44,12 @@ void Scene::loadFromFile(const std::string& filename) {
         if(line.empty()) continue;
         std::istringstream iss(line);
         char type;
+        char discard;
         iss >> type;
         switch (type) {
             case 'e': {
                 float x, y, z, f, sw, sh;
                 int iw, ih;
-                char discard;
                 Vector position, forward, up;
                 // Parsing: Position -> p(x y z)
                 iss >> discard >> discard >> x >> y >> z >> discard;
@@ -128,34 +128,27 @@ void Scene::loadFromFile(const std::string& filename) {
                 break;
             }
             case 'd': {
-                float x, y, z, l;
-                iss >> x >> y >> z >> l;
+                // Parsing: Direction -> d(x y z)
+                float x, y, z;
+                iss >> discard >> discard >> x >> y >> z >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Direction Format");
                 Vector direction(x, y, z);
-                if (l == 0.0f) {
-                    // Directional Light
-                    Vector intensity = (ambientLight ? ambientLight->getIntensity() : Vector(0,0,0));
-                    lights.push_back(new DirectionalLight(direction, intensity));
-                } else {
-                    // Spotlight with default position and cutoff, will be set later
-                    Vector intensity = (ambientLight ? ambientLight->getIntensity() : Vector(0,0,0));
-                    lights.push_back(new Spotlight(Vector(0,0,0), direction, 0, intensity));
-                }
+                Vector intensity = (ambientLight ? ambientLight->getIntensity() : Vector(0,0,0));
+                lights.push_back(new DirectionalLight(direction, intensity));
                 break;
             }
-            case 'p': {
-                float px, py, pz, cutoff;
-                iss >> px >> py >> pz >> cutoff;
-                if (pointCounter < (int)lights.size()) {
-                    Spotlight* spotLight = dynamic_cast<Spotlight*>(lights[pointCounter]);
-                    if (spotLight) {
-                        spotLight->setPosition(Vector(px, py, pz), cutoff);
-                        pointCounter++;
-                    } else {
-                        std::cerr << "Error: Attempted to set position for a non-spotlight light." << std::endl;
-                    }
-                } else {
-                    std::cerr << "Error: Mismatch in spotlight position assignment. Not enough spotlights." << std::endl;
-                }
+            case 's':{
+                float x, y, z, cutoff;
+                // Parsing: Position -> p(x y z)
+                iss >> discard >> discard >> x >> y >> z >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Psotion Format");
+                Vector position(x,y,z);
+                // Parsing: Direction -> d(x y z c)
+                iss >> discard >> discard >> x >> y >> z >> cutoff >> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Direction Format");
+                Vector direction(x, y, z);
+                Vector intensity = (ambientLight ? ambientLight->getIntensity() : Vector(0,0,0));
+                lights.push_back(new Spotlight(position, direction, cutoff, intensity));
                 break;
             }
             case 'c': {
