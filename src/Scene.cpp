@@ -133,7 +133,10 @@ void Scene::loadFromFile(const std::string& filename) {
                 iss >> discard >> discard >> x >> y >> z >> discard;
                 if (iss.fail()) throw std::runtime_error("Invalid Direction Format");
                 Vector direction(x, y, z);
-                Vector intensity = (ambientLight ? ambientLight->getIntensity() : Vector(0,0,0));
+                // Parsing: Position -> i(r g b x)
+                iss >> discard >> discard >> x >> y >> z >> discard>> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Psotion Format");
+                Vector intensity(x,y,z);
                 lights.push_back(new DirectionalLight(direction, intensity));
                 break;
             }
@@ -147,7 +150,10 @@ void Scene::loadFromFile(const std::string& filename) {
                 iss >> discard >> discard >> x >> y >> z >> cutoff >> discard;
                 if (iss.fail()) throw std::runtime_error("Invalid Direction Format");
                 Vector direction(x, y, z);
-                Vector intensity = (ambientLight ? ambientLight->getIntensity() : Vector(0,0,0));
+                // Parsing: Position -> i(r g b x)
+                iss >> discard >> discard >> x >> y >> z >> discard>> discard;
+                if (iss.fail()) throw std::runtime_error("Invalid Psotion Format");
+                Vector intensity(x,y,z);
                 lights.push_back(new Spotlight(position, direction, cutoff, intensity));
                 break;
             }
